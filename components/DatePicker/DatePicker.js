@@ -59,7 +59,7 @@ export default function DatePicker({ selectedDate, onSelectDate }) {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
+    /* paddingHorizontal: 16, */
     justifyContent: 'space-between',
   },
   pressable: {

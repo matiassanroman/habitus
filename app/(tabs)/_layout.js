@@ -3,11 +3,22 @@ import { MaterialIcons } from '@expo/vector-icons';
 
 export default function TabsLayout() {
   return (
-    <Tabs screenOptions={{ headerShown: false }}>
+    <Tabs
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: '#f8fafc',
+        },
+        headerTintColor: '#0f172a',
+        headerTitleStyle: {
+          fontWeight: '700',
+        },
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Hoy',
+          /* title: 'Hoy', */
+          tabBarLabel: 'Hoy',
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="check-circle" size={size} color={color} />
           ),
@@ -17,7 +28,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="create-habit"
         options={{
-          title: 'Crear Hábito',
+          tabBarLabel: 'Crear Hábito',
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="add-circle" size={size} color={color} />
           ),

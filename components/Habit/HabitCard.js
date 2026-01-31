@@ -1,5 +1,5 @@
-import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
-import { router } from 'expo-router';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { getCategoryById } from '../../constants/categories';
 import { MaterialIcons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
 
@@ -7,8 +7,7 @@ export default function HabitCard({
   id,
   title,
   description,
-  icon,
-  color,
+  category,
   completed,
   selectedDate,
   onToggle,
@@ -25,7 +24,7 @@ export default function HabitCard({
   }
 
   const disabled = isFutureDate(selectedDate);
-
+  const { label, icon, color } = getCategoryById(category);
   return (
     <Pressable
       onPress={onToggle}
@@ -43,19 +42,14 @@ export default function HabitCard({
         <View style={styles.left}>
           {/* ICONO DEL HÁBITO */}
           <View style={styles.iconBox}>
-            <MaterialIcons
-              name={icon}
-              size={24}
-              color={color}
-              //color={completed ? colors.muted : colors.primary}
-            />
+            <MaterialIcons name={icon} size={24} color={color} />
           </View>
 
           <View>
             <Text style={[styles.title, completed && styles.completedTitle]}>
               {title}
             </Text>
-            <Text style={styles.description}>{description}</Text>
+            <Text style={styles.label}>{label}</Text>
           </View>
         </View>
 
@@ -111,7 +105,7 @@ const styles = StyleSheet.create({
     textDecorationLine: 'line-through',
     color: colors.muted,
   },
-  description: {
+  label: {
     fontSize: 12,
     color: colors.muted,
   },

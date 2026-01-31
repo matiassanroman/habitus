@@ -7,54 +7,6 @@ import Toast from 'react-native-toast-message';
 import HabitCard from './HabitCard';
 import ConfirmDeleteModal from '../../components/Habit/DeleteHabit/ConfirmDeleteModal';
 
-const initialHabits = [
-  {
-    id: 1,
-    title: 'Beber Agua',
-    description: 'Meta: 2000ml',
-    icon: 'water-drop',
-    frequency: [true, true, true, true, true, true, true],
-    start_date: '2026-01-20',
-    completedDates: [],
-  },
-  {
-    id: 2,
-    title: 'Meditación',
-    description: '15 min',
-    icon: 'self-improvement',
-    frequency: [true, false, true, false, true, false, false],
-    start_date: '2026-01-21',
-    completedDates: [],
-  },
-  {
-    id: 3,
-    title: 'Crossfit',
-    description: 'Entrenamiento de fuerza',
-    icon: 'water-drop',
-    frequency: [false, true, false, true, false, false, false],
-    start_date: '2026-01-22',
-    completedDates: [],
-  },
-  {
-    id: 4,
-    title: 'Despertarse 07:30',
-    description: '',
-    icon: 'self-improvement',
-    frequency: [true, true, true, true, true, true, true],
-    start_date: '2026-01-22',
-    completedDates: [],
-  },
-  {
-    id: 5,
-    title: 'Preparar desayuno',
-    description: 'Desayuno nutritivo',
-    frequency: [true, true, true, true, true, true, true],
-    start_date: '2026-01-18',
-    icon: 'water-drop',
-    completedDates: [],
-  },
-];
-
 export default function HabitList({ selectedDate }) {
   const [habits, setHabits] = useState([]);
   const [selectedHabit, setSelectedHabit] = useState(null);
@@ -74,7 +26,8 @@ export default function HabitList({ selectedDate }) {
     .map((h) => ({
       ...h,
       completed: h.completedDates?.includes(dateKey) ?? false,
-    }));
+    }))
+    .sort((a, b) => a.category.localeCompare(b.category, 'es'));
 
   const onToggleHabit = async (id) => {
     const updated = habits.map((habit) => {
@@ -116,17 +69,25 @@ export default function HabitList({ selectedDate }) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Hábitos</Text>
-      {console.log(habitsForSelectedDay)}
       <View style={styles.list}>
-        {habitsForSelectedDay.map((habit) => (
-          <HabitCard
-            key={habit.id}
-            {...habit}
-            selectedDate={selectedDate}
-            onToggle={() => onToggleHabit(habit.id)}
-            onLongPress={() => handleLongPress(habit)}
-          />
-        ))}
+        {habitsForSelectedDay.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyTitle}>Hoy no tienes hábitos 🌱</Text>
+            <Text style={styles.emptyText}>
+              Puedes descansar o crear uno nuevo desde la pestaña Crear Hábito.
+            </Text>
+          </View>
+        ) : (
+          habitsForSelectedDay.map((habit) => (
+            <HabitCard
+              key={habit.id}
+              {...habit}
+              selectedDate={selectedDate}
+              onToggle={() => onToggleHabit(habit.id)}
+              onLongPress={() => handleLongPress(habit)}
+            />
+          ))
+        )}
       </View>
       <Modal
         transparent
@@ -184,7 +145,7 @@ export default function HabitList({ selectedDate }) {
 }
 
 const styles = StyleSheet.create({
-  container: { paddingHorizontal: 24, marginTop: 24 },
+  container: { /* paddingHorizontal: 24, */ marginTop: 24 },
   title: { fontSize: 18, fontWeight: '800', marginBottom: 16 },
   list: { gap: 12 },
   backdrop: {
@@ -242,5 +203,24 @@ const styles = StyleSheet.create({
   deleteText: {
     color: '#dc2626',
     fontWeight: '700',
+  },
+  emptyState: {
+    paddingVertical: 32,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    gap: 8,
+  },
+
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#374151',
+  },
+
+  emptyText: {
+    fontSize: 14,
+    textAlign: 'center',
+    color: '#6b7280',
+    lineHeight: 20,
   },
 });
