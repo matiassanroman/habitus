@@ -1,6 +1,6 @@
 import { View, Text, Pressable, StyleSheet, Keyboard } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { CATEGORIES } from '../../../constants/categories';
+import { CATEGORIES } from '../../constants/categories';
 
 export default function CategoryGridPicker({ value, onChange }) {
   function handleSelect(id) {

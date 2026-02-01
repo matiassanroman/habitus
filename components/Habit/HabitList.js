@@ -1,11 +1,11 @@
 import { useState, useCallback } from 'react';
-import { Pressable, View, Text, Modal, Alert, StyleSheet } from 'react-native';
+import { Pressable, View, Text, Modal, StyleSheet } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { getHabits, saveHabits } from '../../helper/storage/habitsStorage';
 import { getWeekDayIndex, formatDate } from '../../helper/habitFunctions';
 import Toast from 'react-native-toast-message';
 import HabitCard from './HabitCard';
-import ConfirmDeleteModal from '../../components/Habit/DeleteHabit/ConfirmDeleteModal';
+import ConfirmDeleteModal from '../modal/ConfirmDeleteModal';
 
 export default function HabitList({ selectedDate }) {
   const [habits, setHabits] = useState([]);

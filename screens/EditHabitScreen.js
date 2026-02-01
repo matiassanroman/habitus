@@ -1,7 +1,7 @@
 import { Text, TextInput, StyleSheet, Pressable } from 'react-native';
 import { useState, useEffect } from 'react';
 import { useLocalSearchParams, router } from 'expo-router';
-import ConfirmDeleteModal from '../components/Habit/DeleteHabit/ConfirmDeleteModal';
+import ConfirmDeleteModal from '../components/modal/ConfirmDeleteModal';
 import Toast from 'react-native-toast-message';
 
 import Screen from '../screens/Screen';
@@ -12,8 +12,8 @@ import {
   deleteHabit,
 } from '../helper/storage/habitsStorage';
 
-import CategoryGridPicker from '../components/Habit/CreateHabit/CategoryGridPicker';
-import FrequencyPicker from '../components/Habit/CreateHabit/FrequencyPicker';
+import CategoryGridPicker from '../components/picker/CategoryPicker';
+import FrequencyPicker from '../components/picker/FrequencyPicker';
 
 export default function EditHabitScreen() {
   const { id } = useLocalSearchParams();

@@ -4,8 +4,8 @@ import { saveHabit } from '../helper/storage/habitsStorage';
 import { router, useFocusEffect } from 'expo-router';
 
 import Toast from 'react-native-toast-message';
-import FrequencyPicker from '../components/Habit/CreateHabit/FrequencyPicker';
-import CategoryGridPicker from '../components/Habit/CreateHabit/CategoryGridPicker';
+import FrequencyPicker from '../components/picker/FrequencyPicker';
+import CategoryGridPicker from '../components/picker/CategoryPicker';
 import Screen from './Screen';
 
 export default function CreateHabitScreen() {
@@ -23,6 +23,7 @@ export default function CreateHabitScreen() {
       setCategory('other');
       setFrequencyMode('daily');
       setFrequency(Array(7).fill(true));
+      setIsSaving(false);
     }, []),
   );
 
