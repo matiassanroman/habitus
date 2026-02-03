@@ -1,13 +1,14 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { getCategoryById } from '../../constants/categories';
+import { getCategoryById } from '../../../constants/categories';
 import { MaterialIcons } from '@expo/vector-icons';
-import { colors } from '../../theme/colors';
+import { colors } from '../../../theme/colors';
 
 export default function HabitCard({
   id,
   title,
   description,
   category,
+  completedDates,
   completed,
   selectedDate,
   onToggle,

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Screen from '../screens/Screen';
 import DatePicker from '../components/picker/DatePicker';
-import HabitList from '../components/habit/HabitList';
+import HabitList from '../components/habit/home/HabitList';
 
 export default function HomeScreen() {
   const [selectedDate, setSelectedDate] = useState(new Date());

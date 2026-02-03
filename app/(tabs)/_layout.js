@@ -17,20 +17,27 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          /* title: 'Hoy', */
           tabBarLabel: 'Hoy',
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="check-circle" size={size} color={color} />
           ),
         }}
       />
-
       <Tabs.Screen
         name="create-habit"
         options={{
           tabBarLabel: 'Crear Hábito',
           tabBarIcon: ({ color, size }) => (
             <MaterialIcons name="add-circle" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="list-habit"
+        options={{
+          tabBarLabel: 'Hábitos',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="list-alt" size={size} color={color} />
           ),
         }}
       />

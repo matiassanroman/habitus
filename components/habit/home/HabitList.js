@@ -1,11 +1,11 @@
 import { useState, useCallback } from 'react';
 import { Pressable, View, Text, Modal, StyleSheet } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { getHabits, saveHabits } from '../../helper/storage/habitsStorage';
-import { getWeekDayIndex, formatDate } from '../../helper/habitFunctions';
+import { getHabits, saveHabits } from '../../../helper/storage/habitsStorage';
+import { getWeekDayIndex, formatDate } from '../../../helper/habitFunctions';
 import Toast from 'react-native-toast-message';
 import HabitCard from './HabitCard';
-import ConfirmDeleteModal from '../modal/ConfirmDeleteModal';
+import ConfirmDeleteModal from '../../modal/ConfirmDeleteModal';
 
 export default function HabitList({ selectedDate }) {
   const [habits, setHabits] = useState([]);
@@ -28,7 +28,8 @@ export default function HabitList({ selectedDate }) {
       completed: h.completedDates?.includes(dateKey) ?? false,
     }))
     .sort((a, b) => a.category.localeCompare(b.category, 'es'));
-
+  {
+  }
   const onToggleHabit = async (id) => {
     const updated = habits.map((habit) => {
       if (habit.id !== id) return habit;
@@ -39,7 +40,7 @@ export default function HabitList({ selectedDate }) {
         ...habit,
         completedDates: completed
           ? habit.completedDates.filter((d) => d !== dateKey)
-          : [...habit.completedDates, dateKey],
+          : [...habit.completedDates, dateKey].sort(),
       };
     });
 
@@ -69,6 +70,7 @@ export default function HabitList({ selectedDate }) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Hábitos</Text>
+
       <View style={styles.list}>
         {habitsForSelectedDay.length === 0 ? (
           <View style={styles.emptyState}>
