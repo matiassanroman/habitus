@@ -199,16 +199,17 @@ export default function EditHabitScreen() {
           </View>
 
           {/* BOTONES */}
-          <View style={styles.actionContainer}>
+          <View style={styles.actionsRow}>
             <Pressable
               onPress={handleSave}
               disabled={isSaving || !hasChanges}
               style={[
-                styles.primaryButton,
+                styles.actionButton,
+                styles.editButton,
                 (!hasChanges || isSaving) && styles.buttonDisabled,
               ]}
             >
-              <Text style={styles.primaryText}>
+              <Text style={styles.editText}>
                 {isSaving
                   ? 'Guardando...'
                   : !hasChanges
@@ -218,7 +219,7 @@ export default function EditHabitScreen() {
             </Pressable>
 
             <Pressable
-              style={styles.deleteButton}
+              style={[styles.actionButton, styles.deleteButton]}
               onPress={() => setConfirmDelete(true)}
             >
               <Text style={styles.deleteText}>Eliminar hábito</Text>
@@ -227,8 +228,8 @@ export default function EditHabitScreen() {
 
           <ConfirmDeleteModal
             visible={confirmDelete}
-            title="Eliminar hábito"
-            message={`Se eliminará "${title}". Esta acción no se puede deshacer.`}
+            title="Eliminar Hábito"
+            message={`¿Seguro que quieres eliminar "${title}"?`}
             onCancel={() => setConfirmDelete(false)}
             onConfirm={async () => {
               await deleteHabit(habitId);
@@ -295,12 +296,19 @@ const styles = StyleSheet.create({
     color: '#f59e0b',
   },
 
-  actionContainer: {
-    marginTop: 10,
-    marginBottom: 40,
+  actionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 12,
+    marginBottom: 30,
   },
-
-  primaryButton: {
+  actionButton: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 14,
+    alignItems: 'center',
+  },
+  /*  primaryButton: {
     backgroundColor: '#2563eb',
     padding: 16,
     borderRadius: 18,
@@ -311,13 +319,29 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '700',
     fontSize: 16,
-  },
+  }, */
 
-  buttonDisabled: {
-    opacity: 0.5,
+  editButton: {
+    backgroundColor: '#e0e7ff',
+    marginRight: 8,
   },
 
   deleteButton: {
+    backgroundColor: '#fee2e2',
+    marginLeft: 8,
+  },
+
+  editText: {
+    color: '#2563eb',
+    fontWeight: '700',
+  },
+
+  deleteText: {
+    color: '#dc2626',
+    fontWeight: '700',
+  },
+
+  /*  deleteButton: {
     marginTop: 14,
     padding: 14,
     borderRadius: 14,
@@ -328,5 +352,9 @@ const styles = StyleSheet.create({
   deleteText: {
     color: '#dc2626',
     fontWeight: '600',
+  }, */
+
+  buttonDisabled: {
+    opacity: 0.5,
   },
 });

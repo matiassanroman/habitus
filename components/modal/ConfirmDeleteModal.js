@@ -2,8 +2,8 @@ import { Modal, Pressable, View, Text, StyleSheet } from 'react-native';
 
 export default function ConfirmDeleteModal({
   visible,
-  title = 'Eliminar',
-  message = '¿Seguro que quieres eliminar esto?',
+  title,
+  message,
   onCancel,
   onConfirm,
 }) {

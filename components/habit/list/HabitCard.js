@@ -83,27 +83,30 @@ export default function HabitCard({ habit, onDelete }) {
           onPress={() => setMenuVisible(false)}
         >
           <View style={styles.modal}>
-            <Text style={styles.modalTitle}>{habit.title}</Text>
-
-            <Pressable
-              style={styles.modalItem}
-              onPress={() => {
-                setMenuVisible(false);
-                router.push(`/habit/${habit.id}`);
-              }}
-            >
-              <Text style={styles.modalItemText}>Editar hábito</Text>
-            </Pressable>
-
-            <Pressable
-              style={styles.modalItem}
-              onPress={() => {
-                setMenuVisible(false);
-                setConfirmDelete(true);
-              }}
-            >
-              <Text style={styles.deleteText}>Eliminar hábito</Text>
-            </Pressable>
+            <Text style={styles.modalTitle}>Hábito: {habit.title}</Text>
+            <Text style={styles.message}>¿Que acción deseas hacer?</Text>
+            <View style={styles.actionsRow}>
+              {/* EDITAR */}
+              <Pressable
+                style={[styles.actionButton, styles.editButton]}
+                onPress={() => {
+                  setMenuVisible(false);
+                  router.push(`/habit/${habit.id}`);
+                }}
+              >
+                <Text style={styles.editText}>Editar</Text>
+              </Pressable>
+              {/* BORRAR */}
+              <Pressable
+                style={[styles.actionButton, styles.deleteButton]}
+                onPress={() => {
+                  setMenuVisible(false);
+                  setConfirmDelete(true);
+                }}
+              >
+                <Text style={styles.deleteText}>Eliminar</Text>
+              </Pressable>
+            </View>
           </View>
         </Pressable>
       </Modal>
@@ -289,43 +292,65 @@ const styles = StyleSheet.create({
 
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.35)',
+    backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',
     alignItems: 'center',
   },
 
   modal: {
-    backgroundColor: '#FFFFFF',
-    width: 260,
+    backgroundColor: '#fff',
+    padding: 20,
     borderRadius: 20,
-    paddingVertical: 16,
-    paddingHorizontal: 14,
-    gap: 10,
+    width: 280,
+    gap: 14,
+    elevation: 5,
   },
 
   modalTitle: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '700',
     textAlign: 'center',
-    marginBottom: 8,
-    color: '#111827',
+    marginBottom: 6,
   },
-
+  message: {
+    textAlign: 'center',
+    color: '#4b5563',
+  },
   modalItem: {
     paddingVertical: 12,
     alignItems: 'center',
     borderRadius: 12,
   },
 
-  modalItemText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#2563EB',
+  actionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 12,
+  },
+
+  actionButton: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 14,
+    alignItems: 'center',
+  },
+
+  editButton: {
+    backgroundColor: '#e0e7ff',
+    marginRight: 8,
+  },
+
+  deleteButton: {
+    backgroundColor: '#fee2e2',
+    marginLeft: 8,
+  },
+  editText: {
+    color: '#2563eb',
+    fontWeight: '700',
   },
 
   deleteText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#DC2626',
+    color: '#dc2626',
+    fontWeight: '700',
   },
 });

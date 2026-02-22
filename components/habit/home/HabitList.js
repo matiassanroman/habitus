@@ -135,7 +135,7 @@ export default function HabitList({ selectedDate }) {
       {/* Modal acciones */}
       <ConfirmDeleteModal
         visible={confirmDelete}
-        title="Eliminar hábito"
+        title="Eliminar Hábito"
         message={`¿Seguro que quieres eliminar "${selectedHabit?.title}"?`}
         onCancel={() => setConfirmDelete(false)}
         onConfirm={() => {
