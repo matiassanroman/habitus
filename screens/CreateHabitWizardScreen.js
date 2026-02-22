@@ -215,6 +215,7 @@ export default function CreateHabitWizardScreen() {
             onBack={prevStep}
             onNext={handleSave}
             nextLabel={isSaving ? 'Guardando...' : 'Crear hábito'}
+            isSaving={isSaving}
           />
         </View>
       )}
@@ -235,14 +236,27 @@ function ProgressIndicator({ step }) {
   );
 }
 
-function WizardNavigation({ onBack, onNext, nextLabel = 'Continuar' }) {
+function WizardNavigation({
+  onBack,
+  onNext,
+  nextLabel = 'Continuar',
+  isSaving = false,
+}) {
   return (
     <View style={styles.navContainer}>
-      <Pressable onPress={onBack} style={styles.secondaryButton}>
+      <Pressable
+        onPress={onBack}
+        style={[styles.secondaryButton, isSaving && styles.buttonDisabled]}
+        disabled={isSaving}
+      >
         <Text style={styles.secondaryText}>Atrás</Text>
       </Pressable>
 
-      <Pressable onPress={onNext} style={styles.primaryButtonSmall}>
+      <Pressable
+        onPress={onNext}
+        style={[styles.primaryButtonSmall, isSaving && styles.buttonDisabled]}
+        disabled={isSaving}
+      >
         <Text style={styles.primaryText}>{nextLabel}</Text>
       </Pressable>
     </View>

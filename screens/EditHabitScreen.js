@@ -43,7 +43,7 @@ export default function EditHabitScreen() {
   const [originalHabit, setOriginalHabit] = useState(null);
 
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const [isSavingOrDeleting, setIsSavingOrDeletingOrDeleting] = useState(false);
 
   useEffect(() => {
     const loadHabit = async () => {
@@ -84,7 +84,7 @@ export default function EditHabitScreen() {
   const descriptionNearLimit = description.length > DESCRIPTION_MAX * 0.8;
 
   async function handleSave() {
-    if (isSaving || !hasChanges) return;
+    if (isSavingOrDeleting || !hasChanges) return;
 
     if (!title.trim()) {
       Toast.show({
@@ -96,7 +96,7 @@ export default function EditHabitScreen() {
       return;
     }
 
-    setIsSaving(true);
+    setIsSavingOrDeletingOrDeleting(true);
 
     const updatedHabit = {
       id: habitId,
@@ -120,7 +120,7 @@ export default function EditHabitScreen() {
 
       setTimeout(() => router.back(), 3000);
     } catch (e) {
-      setIsSaving(false);
+      setIsSavingOrDeleting(false);
       Toast.show({
         type: 'error',
         text1: 'Error',
@@ -141,8 +141,6 @@ export default function EditHabitScreen() {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* <Text style={styles.screenTitle}>Editar hábito</Text> */}
-
           {/* INFORMACIÓN */}
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>Información</Text>
@@ -205,15 +203,15 @@ export default function EditHabitScreen() {
           <View style={styles.actionsRow}>
             <Pressable
               onPress={handleSave}
-              disabled={isSaving || !hasChanges}
+              disabled={isSavingOrDeleting || !hasChanges}
               style={[
                 styles.actionButton,
                 styles.editButton,
-                (!hasChanges || isSaving) && styles.buttonDisabled,
+                (!hasChanges || isSavingOrDeleting) && styles.buttonDisabled,
               ]}
             >
               <Text style={styles.editText}>
-                {isSaving
+                {isSavingOrDeleting
                   ? 'Guardando...'
                   : !hasChanges
                     ? 'Sin cambios'
@@ -222,10 +220,17 @@ export default function EditHabitScreen() {
             </Pressable>
 
             <Pressable
-              style={[styles.actionButton, styles.deleteButton]}
+              style={[
+                styles.actionButton,
+                styles.deleteButton,
+                isSavingOrDeleting && styles.buttonDisabled,
+              ]}
               onPress={() => setConfirmDelete(true)}
+              disabled={isSavingOrDeleting}
             >
-              <Text style={styles.deleteText}>Eliminar hábito</Text>
+              <Text style={styles.deleteText}>
+                {isSavingOrDeleting ? 'Eliminando...' : 'Eliminar hábito'}
+              </Text>
             </Pressable>
           </View>
 
@@ -235,15 +240,30 @@ export default function EditHabitScreen() {
             message={`¿Seguro que quieres eliminar "${title}"?`}
             onCancel={() => setConfirmDelete(false)}
             onConfirm={async () => {
-              await deleteHabit(habitId);
-              setConfirmDelete(false);
+              if (isSavingOrDeleting) return;
+              setIsSavingOrDeletingOrDeleting(true);
 
-              Toast.show({
-                type: 'info',
-                text1: 'Hábito eliminado',
-              });
+              try {
+                await deleteHabit(habitId);
 
-              router.replace('/');
+                Toast.show({
+                  type: 'info',
+                  text1: 'Hábito eliminado',
+                  position: 'bottom',
+                  visibilityTime: 3000,
+                });
+
+                setIsSavingOrDeletingOrDeleting(false);
+                router.back();
+              } catch (e) {
+                setIsSavingOrDeletingOrDeleting(false);
+                Toast.show({
+                  type: 'error',
+                  text1: 'Error',
+                  text2: 'No se pudo eliminar el hábito',
+                  position: 'bottom',
+                });
+              }
             }}
           />
         </ScrollView>
