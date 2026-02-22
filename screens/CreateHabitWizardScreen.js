@@ -62,12 +62,22 @@ export default function CreateHabitWizardScreen() {
   async function handleSave() {
     if (isSaving) return;
 
+    if (!title.trim()) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'El título es obligatorio',
+        position: 'bottom',
+      });
+      return;
+    }
+
     setIsSaving(true);
 
     const habit = {
       id: Date.now(),
-      title: title.trim() || description.slice(0, 25),
-      description,
+      title: title.trim(),
+      description: description.trim(),
       category,
       frequency,
       start_date: new Date().toISOString().slice(0, 10),
@@ -84,7 +94,6 @@ export default function CreateHabitWizardScreen() {
         visibilityTime: 3000,
       });
 
-      //setTimeout(() => router.back(), 3000);
       setTimeout(() => router.replace('/'), 3000);
     } catch (e) {
       setIsSaving(false);

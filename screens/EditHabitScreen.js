@@ -113,9 +113,12 @@ export default function EditHabitScreen() {
       Toast.show({
         type: 'success',
         text1: 'Cambios guardados',
+        text2: '¡Tu hábito se ha modificado correctamente!',
+        position: 'bottom',
+        visibilityTime: 3000,
       });
 
-      router.back();
+      setTimeout(() => router.back(), 3000);
     } catch (e) {
       setIsSaving(false);
       Toast.show({
