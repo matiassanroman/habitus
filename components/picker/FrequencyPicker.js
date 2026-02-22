@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
 const DAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
@@ -8,6 +9,19 @@ export default function FrequencyPicker({
   value,
   onChange,
 }) {
+  const [lastCustomValue, setLastCustomValue] = useState(value);
+
+  function handleModeChange(newMode) {
+    if (newMode === 'daily') {
+      setLastCustomValue(value);
+      onChange(Array(7).fill(true));
+    }
+    if (newMode === 'custom') {
+      onChange(lastCustomValue);
+    }
+    onModeChange(newMode);
+  }
+
   function toggleDay(index) {
     const copy = [...value];
     copy[index] = !copy[index];
@@ -16,31 +30,51 @@ export default function FrequencyPicker({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Frecuencia</Text>
-
-      <View style={styles.radioRow}>
-        {['daily', 'custom'].map((m) => (
-          <Pressable
-            key={m}
-            onPress={() => onModeChange(m)}
-            style={[styles.radio, mode === m && styles.radioActive]}
+      {/* SEGMENTED CONTROL */}
+      <View style={styles.modeContainer}>
+        <Pressable
+          onPress={() => handleModeChange('daily')}
+          style={[styles.modeButton, mode === 'daily' && styles.modeSelected]}
+        >
+          <Text
+            style={[
+              styles.modeText,
+              mode === 'daily' && styles.modeTextSelected,
+            ]}
           >
-            <Text style={mode === m && styles.radioTextActive}>
-              {m === 'daily' ? 'Todos los días' : 'Especificar días'}
-            </Text>
-          </Pressable>
-        ))}
+            Todos los días
+          </Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => handleModeChange('custom')}
+          style={[styles.modeButton, mode === 'custom' && styles.modeSelected]}
+        >
+          <Text
+            style={[
+              styles.modeText,
+              mode === 'custom' && styles.modeTextSelected,
+            ]}
+          >
+            Especificar días
+          </Text>
+        </Pressable>
       </View>
 
+      {/* DÍAS */}
       {mode === 'custom' && (
-        <View style={styles.daysRow}>
+        <View style={styles.daysContainer}>
           {DAYS.map((day, i) => (
             <Pressable
               key={day}
               onPress={() => toggleDay(i)}
-              style={[styles.day, value[i] && styles.dayActive]}
+              style={[styles.dayButton, value[i] && styles.daySelected]}
             >
-              <Text style={value[i] && styles.dayTextActive}>{day}</Text>
+              <Text
+                style={[styles.dayText, value[i] && styles.dayTextSelected]}
+              >
+                {day}
+              </Text>
             </Pressable>
           ))}
         </View>
@@ -50,46 +84,54 @@ export default function FrequencyPicker({
 }
 
 const styles = StyleSheet.create({
-  container: { marginTop: 16 },
-  label: {
-    fontWeight: '700',
-    marginBottom: 8,
+  container: {
+    marginTop: 12,
   },
-  radioRow: {
+  modeContainer: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 12,
+    borderRadius: 16,
+    padding: 4,
+    marginBottom: 16,
   },
-  radio: {
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#cbd5f5',
-  },
-  radioActive: {
-    backgroundColor: '#2563eb',
-  },
-  radioTextActive: {
-    color: '#fff',
-    fontWeight: '700',
-  },
-  daysRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  day: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 1,
+  modeButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  dayActive: {
+  modeSelected: {
     backgroundColor: '#2563eb',
   },
-  dayTextActive: {
+  modeText: {
+    fontWeight: '600',
+    color: '#475569',
+  },
+  modeTextSelected: {
+    color: '#fff',
+  },
+  daysContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
+  dayButton: {
+    width: 35,
+    height: 35,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f1f5f9',
+  },
+  daySelected: {
+    backgroundColor: '#2563eb',
+  },
+  dayText: {
+    fontWeight: '600',
+    color: '#475569',
+  },
+  dayTextSelected: {
     color: '#fff',
   },
 });

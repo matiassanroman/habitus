@@ -1,5 +1,6 @@
 import { Stack } from 'expo-router';
-import CreateHabitScreen from '../../screens/CreateHabitScreen';
+//import CreateHabitScreen from '../../screens/CreateHabitScreen';
+import CreateHabitWizardScreen from '../../screens/CreateHabitWizardScreen';
 
 export default function CreateHabit() {
   return (
@@ -9,7 +10,7 @@ export default function CreateHabit() {
           title: 'Nuevo Hábito',
         }}
       />
-      <CreateHabitScreen />
+      <CreateHabitWizardScreen />
     </>
   );
 }

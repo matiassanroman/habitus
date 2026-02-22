@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useFocusEffect } from 'expo-router';
-import { getHabits } from '../helper/storage/habitsStorage';
+import { getHabits, saveHabits } from '../helper/storage/habitsStorage';
 import Screen from '../screens/Screen';
 import HabitCard from '../components/habit/list/HabitCard';
 
@@ -17,6 +17,12 @@ export default function ListHabitScreen() {
     a.category.localeCompare(b.category, 'es'),
   );
 
+  const handleDeleteHabit = async (id) => {
+    const updated = habits.filter((h) => h.id !== id);
+    setHabits(updated);
+    await saveHabits(updated);
+  };
+
   return (
     <Screen>
       <View>
@@ -31,7 +37,11 @@ export default function ListHabitScreen() {
             </View>
           ) : (
             habitsForCategory.map((habit) => (
-              <HabitCard key={habit.id} habit={habit} />
+              <HabitCard
+                key={habit.id}
+                habit={habit}
+                onDelete={(id) => handleDeleteHabit(id)}
+              />
             ))
           )}
         </View>

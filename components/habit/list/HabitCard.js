@@ -1,12 +1,16 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, Modal, Pressable, StyleSheet } from 'react-native';
+import { router } from 'expo-router';
 import { getCategoryById } from '../../../constants/categories';
 import { MaterialIcons } from '@expo/vector-icons';
+import ConfirmDeleteModal from '../../modal/ConfirmDeleteModal';
 
 const DAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
-export default function HabitCard({ habit }) {
-  //const [selectedDate] = useState(new Date());
+export default function HabitCard({ habit, onDelete }) {
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
   const selectedDate = new Date();
   const { icon, color } = getCategoryById(habit.category);
 
@@ -22,7 +26,6 @@ export default function HabitCard({ habit }) {
     .filter(Boolean)
     .join(' · ');
 
-  // ✅ Semana correctamente anclada a lunes
   const getDateForDay = (index) => {
     const date = new Date(selectedDate);
     const day = selectedDate.getDay();
@@ -52,17 +55,72 @@ export default function HabitCard({ habit }) {
 
   return (
     <View style={styles.card}>
-      {/* Header */}
+      {/* HEADER */}
       <View style={styles.header}>
         <Text style={styles.title}>{habit.title}</Text>
-        <View style={styles.rightHeader}>
-          <View>
-            <MaterialIcons name={icon} size={24} color={color} />
-          </View>
+
+        <View style={styles.headerRight}>
+          <MaterialIcons name={icon} size={22} color={color} />
+
+          <Pressable
+            style={styles.menuButton}
+            onPress={() => setMenuVisible(true)}
+          >
+            <MaterialIcons name="more-vert" size={20} color="#64748B" />
+          </Pressable>
         </View>
       </View>
 
-      {/* Frecuencia */}
+      {/* MENU MODAL */}
+      <Modal
+        transparent
+        animationType="fade"
+        visible={menuVisible}
+        onRequestClose={() => setMenuVisible(false)}
+      >
+        <Pressable
+          style={styles.backdrop}
+          onPress={() => setMenuVisible(false)}
+        >
+          <View style={styles.modal}>
+            <Text style={styles.modalTitle}>{habit.title}</Text>
+
+            <Pressable
+              style={styles.modalItem}
+              onPress={() => {
+                setMenuVisible(false);
+                router.push(`/habit/${habit.id}`);
+              }}
+            >
+              <Text style={styles.modalItemText}>Editar hábito</Text>
+            </Pressable>
+
+            <Pressable
+              style={styles.modalItem}
+              onPress={() => {
+                setMenuVisible(false);
+                setConfirmDelete(true);
+              }}
+            >
+              <Text style={styles.deleteText}>Eliminar hábito</Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
+
+      {/* CONFIRM DELETE */}
+      <ConfirmDeleteModal
+        visible={confirmDelete}
+        title="Eliminar hábito"
+        message={`¿Seguro que quieres eliminar "${habit.title}"?`}
+        onCancel={() => setConfirmDelete(false)}
+        onConfirm={() => {
+          setConfirmDelete(false);
+          onDelete?.(habit.id);
+        }}
+      />
+
+      {/* FRECUENCIA */}
       <View
         style={[
           styles.frequencyBadge,
@@ -79,64 +137,38 @@ export default function HabitCard({ habit }) {
         </Text>
       </View>
 
-      {/* Descripción */}
-      {habit.description ? (
+      {/* DESCRIPCIÓN */}
+      {habit.description && (
         <Text style={styles.description}>{habit.description}</Text>
-      ) : null}
+      )}
 
-      {/* Semana */}
+      {/* SEMANA */}
       <View style={styles.weekRow}>
         {DAYS.map((day, index) => {
           const date = getDateForDay(index);
           const completed = isCompletedForDate(date);
 
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
-          const dayDate = new Date(date);
-          dayDate.setHours(0, 0, 0, 0);
-
-          let dayStyle = styles.dayFuture;
-          let textStyle = styles.dayFutureText;
-
-          if (dayDate < today) {
-            // Pasado
-            if (completed) {
-              dayStyle = styles.dayCompleted;
-              textStyle = styles.dayCompletedText;
-            } else {
-              dayStyle = styles.dayMissed;
-              textStyle = styles.dayMissedText;
-            }
-          } else if (dayDate.getTime() === today.getTime()) {
-            // Hoy
-            if (completed) {
-              dayStyle = styles.dayCompleted;
-              textStyle = styles.dayCompletedText;
-            } else {
-              dayStyle = styles.dayToday;
-              textStyle = styles.dayTodayText;
-            }
-          } else {
-            // Futuro
-
-            dayStyle = styles.dayFuture;
-            textStyle = styles.dayFutureText;
-          }
-
           return (
             <View
-              //key={`${habit.id}-${formatDate(date)}`}
               key={day}
-              style={[styles.dayBox, dayStyle]}
+              style={[styles.dayBox, completed && styles.dayCompleted]}
             >
-              <Text style={[styles.dayText, textStyle]}>{day}</Text>
-              <Text style={[styles.dateText, textStyle]}>{date.getDate()}</Text>
+              <Text
+                style={[styles.dayText, completed && styles.dayCompletedText]}
+              >
+                {day}
+              </Text>
+              <Text
+                style={[styles.dateText, completed && styles.dayCompletedText]}
+              >
+                {date.getDate()}
+              </Text>
             </View>
           );
         })}
       </View>
 
-      {/* Racha */}
+      {/* RACHA */}
       <Text style={styles.streak}>
         🔥 Racha más larga: {getLongestStreak()} días
       </Text>
@@ -147,121 +179,153 @@ export default function HabitCard({ habit }) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 22,
-    padding: 15,
-    marginBottom: 20,
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 18,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#E5E7EB',
   },
 
-  /* Header */
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  rightHeader: {
+
+  headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
   },
+
+  menuButton: {
+    padding: 6,
+    borderRadius: 10,
+  },
+
   title: {
-    fontSize: 18,
+    flex: 1,
+    marginRight: 10,
+    fontSize: 17,
     fontWeight: '600',
-    color: '#0F172A',
+    color: '#111827',
   },
-  /* Frequency */
+
   frequencyBadge: {
-    marginTop: 10,
-    alignSelf: 'flex-start', // que se ajuste al contenido
+    marginTop: 12,
+    alignSelf: 'flex-start',
     paddingHorizontal: 12,
     paddingVertical: 5,
     borderRadius: 14,
   },
+
   frequencyEveryday: {
-    backgroundColor: '#DCFCE7', // verde pastel
+    backgroundColor: '#DCFCE7',
   },
+
   frequencySpecific: {
-    backgroundColor: '#DBEAFE', // azul pastel
+    backgroundColor: '#DBEAFE',
   },
+
   frequencyText: {
     fontSize: 12,
     fontWeight: '600',
   },
+
   frequencyTextGreen: {
-    color: '#166534', // verde oscuro
+    color: '#166534',
   },
+
   frequencyTextBlue: {
-    color: '#1E40AF', // azul oscuro
+    color: '#1E40AF',
   },
-  /* Text */
-  frequency: {
-    marginTop: 10,
-    fontSize: 13,
-    color: '#64748B',
-  },
+
   description: {
-    marginTop: 12,
+    marginTop: 14,
     fontSize: 14,
     color: '#475569',
   },
-  /* Semana */
+
   weekRow: {
-    marginTop: 20,
+    marginTop: 18,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
   },
+
   dayBox: {
-    width: 40,
-    height: 55,
-    borderRadius: 16,
+    width: 38,
+    height: 52,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
+    backgroundColor: '#F3F4F6',
   },
+
+  dayCompleted: {
+    backgroundColor: '#DCFCE7',
+  },
+
   dayText: {
     fontSize: 12,
     fontWeight: '600',
+    color: '#6B7280',
   },
+
   dateText: {
     fontSize: 12,
+    color: '#6B7280',
   },
-  // Estados
-  dayCompleted: {
-    backgroundColor: 'rgba(220, 252, 231, 1)',
-    borderColor: '#166534',
-  },
+
   dayCompletedText: {
     color: '#166534',
   },
-  dayToday: {
-    //backgroundColor: '#E2E8F0',
-    borderColor: '#94A3B8',
-  },
-  dayTodayText: {
-    color: '#64748B', // gris oscuro
-  },
-  dayFuture: {
-    backgroundColor: '#F1F5F9', // gris
-    borderColor: 'transparent',
-  },
-  dayFutureText: {
-    color: '#64748B',
-  },
-  dayMissed: {
-    backgroundColor: '#FEE2E2', // rojo pastel
-    borderColor: '#991B1B', // rojo fuerte
-  },
-  dayMissedText: {
-    color: '#991B1B', // texto blanco
-  },
-  /* Streak */
+
   streak: {
-    marginTop: 18,
+    marginTop: 16,
     fontSize: 13,
-    color: '#334155',
+    color: '#374151',
     fontWeight: '500',
+  },
+
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  modal: {
+    backgroundColor: '#FFFFFF',
+    width: 260,
+    borderRadius: 20,
+    paddingVertical: 16,
+    paddingHorizontal: 14,
+    gap: 10,
+  },
+
+  modalTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 8,
+    color: '#111827',
+  },
+
+  modalItem: {
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderRadius: 12,
+  },
+
+  modalItemText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#2563EB',
+  },
+
+  deleteText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#DC2626',
   },
 });

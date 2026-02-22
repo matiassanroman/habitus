@@ -46,7 +46,7 @@ export default function HabitCard({
             <MaterialIcons name={icon} size={24} color={color} />
           </View>
 
-          <View>
+          <View style={styles.textContainer}>
             <Text style={[styles.title, completed && styles.completedTitle]}>
               {title}
             </Text>
@@ -89,6 +89,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 16,
     alignItems: 'center',
+    flex: 1,
+  },
+
+  textContainer: {
+    flex: 1,
+    minWidth: 0,
+  },
+
+  title: {
+    fontWeight: '700',
+    fontSize: 14,
+    flexWrap: 'wrap',
   },
   iconBox: {
     width: 48,
@@ -97,10 +109,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#e2e8f0',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  title: {
-    fontWeight: '700',
-    fontSize: 14,
   },
   completedTitle: {
     textDecorationLine: 'line-through',

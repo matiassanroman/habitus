@@ -1,9 +1,18 @@
-import { Text, TextInput, StyleSheet, Pressable } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  Pressable,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from 'react-native';
 import { useState, useEffect } from 'react';
 import { useLocalSearchParams, router } from 'expo-router';
-import ConfirmDeleteModal from '../components/modal/ConfirmDeleteModal';
 import Toast from 'react-native-toast-message';
 
+import ConfirmDeleteModal from '../components/modal/ConfirmDeleteModal';
 import Screen from '../screens/Screen';
 
 import {
@@ -16,6 +25,9 @@ import CategoryGridPicker from '../components/picker/CategoryPicker';
 import FrequencyPicker from '../components/picker/FrequencyPicker';
 
 export default function EditHabitScreen() {
+  const TITLE_MAX = 40;
+  const DESCRIPTION_MAX = 120;
+
   const { id } = useLocalSearchParams();
 
   const [loaded, setLoaded] = useState(false);
@@ -27,8 +39,12 @@ export default function EditHabitScreen() {
   const [frequencyMode, setFrequencyMode] = useState('daily');
   const [frequency, setFrequency] = useState(Array(7).fill(true));
   const [completedDates, setCompletedDates] = useState([]);
+
+  const [originalHabit, setOriginalHabit] = useState(null);
+
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
   useEffect(() => {
     const loadHabit = async () => {
       const habits = await getHabits();
@@ -43,8 +59,13 @@ export default function EditHabitScreen() {
       setTitle(habit.title);
       setDescription(habit.description);
       setCategory(habit.category);
+
       setFrequency(habit.frequency);
+      const isDaily = habit.frequency.every(Boolean);
+      setFrequencyMode(isDaily ? 'daily' : 'custom');
+
       setCompletedDates(habit.completedDates);
+      setOriginalHabit(habit);
 
       setLoaded(true);
     };
@@ -52,8 +73,18 @@ export default function EditHabitScreen() {
     loadHabit();
   }, [id]);
 
+  const hasChanges =
+    originalHabit &&
+    (title !== originalHabit.title ||
+      description !== originalHabit.description ||
+      category !== originalHabit.category ||
+      JSON.stringify(frequency) !== JSON.stringify(originalHabit.frequency));
+
+  const titleNearLimit = title.length > TITLE_MAX * 0.8;
+  const descriptionNearLimit = description.length > DESCRIPTION_MAX * 0.8;
+
   async function handleSave() {
-    if (isSaving) return;
+    if (isSaving || !hasChanges) return;
 
     if (!title.trim()) {
       Toast.show({
@@ -61,7 +92,6 @@ export default function EditHabitScreen() {
         text1: 'Error',
         text2: 'El título es obligatorio',
         position: 'bottom',
-        visibilityTime: 4000,
       });
       return;
     }
@@ -70,23 +100,22 @@ export default function EditHabitScreen() {
 
     const updatedHabit = {
       id: habitId,
-      title,
-      description,
+      title: title.trim(),
+      description: description.trim(),
       category,
       frequency,
       completedDates,
     };
+
     try {
       await updateHabit(updatedHabit);
+
       Toast.show({
         type: 'success',
-        text1: 'Hábito Modificado',
-        text2: '¡Tu hábito se ha modificado correctamente!',
-        position: 'bottom',
-        visibilityTime: 4000,
+        text1: 'Cambios guardados',
       });
 
-      setTimeout(() => router.back(), 3000);
+      router.back();
     } catch (e) {
       setIsSaving(false);
       Toast.show({
@@ -101,154 +130,203 @@ export default function EditHabitScreen() {
 
   return (
     <Screen>
-      <TextInput
-        placeholder="Título"
-        value={title}
-        onChangeText={setTitle}
-        style={styles.input}
-      />
-
-      <TextInput
-        placeholder="Descripción"
-        value={description}
-        onChangeText={setDescription}
-        style={styles.input}
-      />
-
-      <CategoryGridPicker value={category} onChange={setCategory} />
-
-      <FrequencyPicker
-        mode={frequencyMode}
-        onModeChange={setFrequencyMode}
-        value={frequency}
-        onChange={setFrequency}
-      />
-
-      <Pressable
-        onPress={handleSave}
-        disabled={isSaving}
-        style={styles.saveButton}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={{ flex: 1 }}
       >
-        <Text style={styles.saveText}>
-          {isSaving ? 'Guardando...' : 'Guardar cambios'}
-        </Text>
-      </Pressable>
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* <Text style={styles.screenTitle}>Editar hábito</Text> */}
 
-      <Pressable
-        style={styles.deleteButton}
-        onPress={() => setConfirmDelete(true)}
-      >
-        <Text style={styles.deleteText}>Eliminar hábito</Text>
-      </Pressable>
-      <ConfirmDeleteModal
-        visible={confirmDelete}
-        title="Eliminar hábito"
-        message="¿Seguro que quieres borrar este hábito?"
-        onCancel={() => setConfirmDelete(false)}
-        onConfirm={async () => {
-          await deleteHabit(habitId);
-          setConfirmDelete(false);
+          {/* INFORMACIÓN */}
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Información</Text>
 
-          Toast.show({
-            type: 'info',
-            text1: 'Hábito eliminado',
-            text2: 'Se ha eliminado correctamente',
-            position: 'bottom',
-          });
+            <TextInput
+              placeholder="Ej: Leer 10 páginas por día"
+              value={title}
+              onChangeText={(text) => setTitle(text.slice(0, TITLE_MAX))}
+              maxLength={TITLE_MAX}
+              style={styles.input}
+              autoFocus
+              returnKeyType="done"
+            />
 
-          router.back();
-        }}
-      />
+            <Text
+              style={[styles.counter, titleNearLimit && styles.counterWarning]}
+            >
+              {title.length}/{TITLE_MAX}
+            </Text>
+
+            <TextInput
+              placeholder="Descripción corta (opcional)"
+              value={description}
+              onChangeText={(text) =>
+                setDescription(text.slice(0, DESCRIPTION_MAX))
+              }
+              maxLength={DESCRIPTION_MAX}
+              style={[styles.input, styles.textArea]}
+              multiline
+            />
+
+            <Text
+              style={[
+                styles.counter,
+                descriptionNearLimit && styles.counterWarning,
+              ]}
+            >
+              {description.length}/{DESCRIPTION_MAX}
+            </Text>
+          </View>
+
+          {/* CATEGORÍA */}
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Categoría</Text>
+            <CategoryGridPicker value={category} onChange={setCategory} />
+          </View>
+
+          {/* FRECUENCIA */}
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Frecuencia</Text>
+            <FrequencyPicker
+              mode={frequencyMode}
+              onModeChange={setFrequencyMode}
+              value={frequency}
+              onChange={setFrequency}
+            />
+          </View>
+
+          {/* BOTONES */}
+          <View style={styles.actionContainer}>
+            <Pressable
+              onPress={handleSave}
+              disabled={isSaving || !hasChanges}
+              style={[
+                styles.primaryButton,
+                (!hasChanges || isSaving) && styles.buttonDisabled,
+              ]}
+            >
+              <Text style={styles.primaryText}>
+                {isSaving
+                  ? 'Guardando...'
+                  : !hasChanges
+                    ? 'Sin cambios'
+                    : 'Guardar cambios'}
+              </Text>
+            </Pressable>
+
+            <Pressable
+              style={styles.deleteButton}
+              onPress={() => setConfirmDelete(true)}
+            >
+              <Text style={styles.deleteText}>Eliminar hábito</Text>
+            </Pressable>
+          </View>
+
+          <ConfirmDeleteModal
+            visible={confirmDelete}
+            title="Eliminar hábito"
+            message={`Se eliminará "${title}". Esta acción no se puede deshacer.`}
+            onCancel={() => setConfirmDelete(false)}
+            onConfirm={async () => {
+              await deleteHabit(habitId);
+              setConfirmDelete(false);
+
+              Toast.show({
+                type: 'info',
+                text1: 'Hábito eliminado',
+              });
+
+              router.replace('/');
+            }}
+          />
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    backgroundColor: '#f8fafc',
-  },
-  title: {
+  screenTitle: {
     fontSize: 22,
     fontWeight: '800',
-    marginBottom: 16,
+    marginBottom: 20,
   },
+
+  card: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    marginBottom: 18,
+  },
+
+  sectionTitle: {
+    fontWeight: '700',
+    fontSize: 15,
+    marginBottom: 14,
+  },
+
   input: {
     backgroundColor: '#fff',
     borderRadius: 14,
     padding: 14,
-    marginBottom: 12,
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },
-  saveButton: {
-    marginTop: 24,
+
+  textArea: {
+    minHeight: 90,
+    textAlignVertical: 'top',
+  },
+
+  counter: {
+    alignSelf: 'flex-end',
+    fontSize: 12,
+    color: '#94a3b8',
+    marginTop: 6,
+    marginBottom: 12,
+  },
+
+  counterWarning: {
+    color: '#f59e0b',
+  },
+
+  actionContainer: {
+    marginTop: 10,
+    marginBottom: 40,
+  },
+
+  primaryButton: {
     backgroundColor: '#2563eb',
     padding: 16,
     borderRadius: 18,
     alignItems: 'center',
   },
-  saveText: {
+
+  primaryText: {
     color: '#fff',
     fontWeight: '700',
     fontSize: 16,
   },
-  deleteButton: {
-    marginTop: 12,
-    padding: 14,
-    borderRadius: 18,
-    alignItems: 'center',
+
+  buttonDisabled: {
+    opacity: 0.5,
   },
-  deleteText: {
-    color: '#dc2626',
-    fontWeight: '700',
-  },
+
   deleteButton: {
+    marginTop: 14,
     padding: 14,
-    borderRadius: 18,
+    borderRadius: 14,
     alignItems: 'center',
     backgroundColor: '#fef2f2',
-    marginTop: 12,
   },
+
   deleteText: {
     color: '#dc2626',
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  modal: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 24,
-    alignItems: 'center',
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 12,
-    color: '#1f2937',
-  },
-  modalMessage: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 24,
-    color: '#4b5563',
-  },
-  buttonsContainer: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  modalButton: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 16,
-    alignItems: 'center',
-  },
-  modalButtonText: {
-    fontSize: 16,
     fontWeight: '600',
-  },
-  saveButtonDisabled: {
-    opacity: 0.6,
   },
 });
