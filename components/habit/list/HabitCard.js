@@ -14,7 +14,12 @@ export default function HabitCard({ habit, onDelete }) {
   const selectedDate = new Date();
   const { icon, color } = getCategoryById(habit.category);
 
-  const formatDate = (date) => date.toISOString().split('T')[0];
+  const formatDate = (date) =>
+    date.getFullYear() +
+    '-' +
+    String(date.getMonth() + 1).padStart(2, '0') +
+    '-' +
+    String(date.getDate()).padStart(2, '0');
 
   const isCompletedForDate = (date) =>
     habit.completedDates.includes(formatDate(date));
@@ -41,12 +46,34 @@ export default function HabitCard({ habit, onDelete }) {
       .map((d) => new Date(d))
       .sort((a, b) => a - b);
 
+    const isScheduledDay = (date) => {
+      const dayIndex = date.getDay() === 0 ? 6 : date.getDay() - 1;
+      // convierte domingo=0 a índice 6 (porque tu array empieza en Lun)
+      return habit.frequency[dayIndex];
+    };
+
+    const getNextScheduledDay = (date) => {
+      const next = new Date(date);
+      do {
+        next.setDate(next.getDate() + 1);
+      } while (!isScheduledDay(next));
+      return next;
+    };
+
     let max = 1;
     let current = 1;
 
     for (let i = 1; i < dates.length; i++) {
-      const diff = (dates[i] - dates[i - 1]) / 86400000;
-      diff === 1 ? current++ : (current = 1);
+      const expectedNext = getNextScheduledDay(dates[i - 1]);
+
+      const sameDay = dates[i].toDateString() === expectedNext.toDateString();
+
+      if (sameDay) {
+        current++;
+      } else {
+        current = 1;
+      }
+
       max = Math.max(max, current);
     }
 
@@ -172,9 +199,7 @@ export default function HabitCard({ habit, onDelete }) {
       </View>
 
       {/* RACHA */}
-      <Text style={styles.streak}>
-        🔥 Racha más larga: {getLongestStreak()} días
-      </Text>
+      <Text style={styles.streak}>🔥 {getLongestStreak()} días seguidos</Text>
     </View>
   );
 }
@@ -285,9 +310,9 @@ const styles = StyleSheet.create({
 
   streak: {
     marginTop: 16,
-    fontSize: 13,
+    fontSize: 14,
     color: '#374151',
-    fontWeight: '500',
+    fontWeight: '700',
   },
 
   backdrop: {
