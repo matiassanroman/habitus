@@ -80,6 +80,14 @@ export default function EditHabitScreen() {
       category !== originalHabit.category ||
       JSON.stringify(frequency) !== JSON.stringify(originalHabit.frequency));
 
+  const hasAtLeastOneDaySelected = frequency.some(Boolean);
+
+  const isFrequencyValid =
+    frequencyMode === 'daily' ||
+    (frequencyMode === 'custom' && hasAtLeastOneDaySelected);
+
+  const canSubmit = hasChanges && isFrequencyValid && !isSavingOrDeleting;
+
   const titleNearLimit = title.length > TITLE_MAX * 0.8;
   const descriptionNearLimit = description.length > DESCRIPTION_MAX * 0.8;
 
@@ -153,6 +161,7 @@ export default function EditHabitScreen() {
               style={styles.input}
               autoFocus
               returnKeyType="done"
+              editable={!isSavingOrDeleting}
             />
 
             <Text
@@ -170,6 +179,7 @@ export default function EditHabitScreen() {
               maxLength={DESCRIPTION_MAX}
               style={[styles.input, styles.textArea]}
               multiline
+              editable={!isSavingOrDeleting}
             />
 
             <Text
@@ -185,7 +195,11 @@ export default function EditHabitScreen() {
           {/* CATEGORÍA */}
           <View style={styles.card}>
             <Text style={styles.sectionTitle}>Categoría</Text>
-            <CategoryGridPicker value={category} onChange={setCategory} />
+            <CategoryGridPicker
+              value={category}
+              onChange={setCategory}
+              isSaving={isSavingOrDeleting}
+            />
           </View>
 
           {/* FRECUENCIA */}
@@ -196,6 +210,7 @@ export default function EditHabitScreen() {
               onModeChange={setFrequencyMode}
               value={frequency}
               onChange={setFrequency}
+              isSaving={isSavingOrDeleting}
             />
           </View>
 
@@ -203,11 +218,11 @@ export default function EditHabitScreen() {
           <View style={styles.actionsRow}>
             <Pressable
               onPress={handleSave}
-              disabled={isSavingOrDeleting || !hasChanges}
+              disabled={!canSubmit}
               style={[
                 styles.actionButton,
                 styles.editButton,
-                (!hasChanges || isSavingOrDeleting) && styles.buttonDisabled,
+                !canSubmit && styles.buttonDisabled,
               ]}
             >
               <Text style={styles.editText}>

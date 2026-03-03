@@ -12,7 +12,11 @@ import { CATEGORIES } from '../../constants/categories';
 const { width } = Dimensions.get('window');
 const ITEM_WIDTH = (width - 48) / 3; // 3 columnas con padding
 
-export default function CategoryGridPicker({ value, onChange }) {
+export default function CategoryGridPicker({
+  value,
+  onChange,
+  isSaving = false,
+}) {
   function handleSelect(id) {
     Keyboard.dismiss();
     onChange(id);
@@ -36,6 +40,7 @@ export default function CategoryGridPicker({ value, onChange }) {
                   backgroundColor: `${cat.color}15`,
                 },
               ]}
+              disabled={isSaving}
             >
               <MaterialIcons
                 name={cat.icon}

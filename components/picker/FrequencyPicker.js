@@ -1,24 +1,32 @@
-import { useState } from 'react';
+import { useRef } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 
 const DAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+const EMPTY = Array(7).fill(false);
+const DAILY = Array(7).fill(true);
 
 export default function FrequencyPicker({
   mode,
   onModeChange,
   value,
   onChange,
+  isSaving,
 }) {
-  const [lastCustomValue, setLastCustomValue] = useState(value);
+  const lastCustom = useRef(EMPTY);
 
   function handleModeChange(newMode) {
     if (newMode === 'daily') {
-      setLastCustomValue(value);
-      onChange(Array(7).fill(true));
+      if (mode === 'custom') {
+        lastCustom.current = value;
+      }
+
+      onChange(DAILY);
     }
+
     if (newMode === 'custom') {
-      onChange(lastCustomValue);
+      onChange(lastCustom.current);
     }
+
     onModeChange(newMode);
   }
 
@@ -30,11 +38,11 @@ export default function FrequencyPicker({
 
   return (
     <View style={styles.container}>
-      {/* SEGMENTED CONTROL */}
       <View style={styles.modeContainer}>
         <Pressable
           onPress={() => handleModeChange('daily')}
           style={[styles.modeButton, mode === 'daily' && styles.modeSelected]}
+          disabled={isSaving}
         >
           <Text
             style={[
@@ -49,6 +57,7 @@ export default function FrequencyPicker({
         <Pressable
           onPress={() => handleModeChange('custom')}
           style={[styles.modeButton, mode === 'custom' && styles.modeSelected]}
+          disabled={isSaving}
         >
           <Text
             style={[
@@ -69,6 +78,7 @@ export default function FrequencyPicker({
               key={day}
               onPress={() => toggleDay(i)}
               style={[styles.dayButton, value[i] && styles.daySelected]}
+              disabled={isSaving}
             >
               <Text
                 style={[styles.dayText, value[i] && styles.dayTextSelected]}
@@ -120,6 +130,7 @@ const styles = StyleSheet.create({
     width: 35,
     height: 35,
     borderRadius: 12,
+    borderWidth: 0.5,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#f1f5f9',

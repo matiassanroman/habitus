@@ -33,7 +33,12 @@ export default function CreateHabitWizardScreen() {
 
   const { label } = getCategoryById(category);
 
-  const canContinueStep1 = title.trim().length > 3;
+  const hasAtLeastOneDaySelected = frequency.some(Boolean);
+
+  const canCreateHabit =
+    !isSaving &&
+    title.trim().length > 0 &&
+    (frequencyMode === 'daily' || hasAtLeastOneDaySelected);
 
   useFocusEffect(
     useCallback(() => {
@@ -48,7 +53,7 @@ export default function CreateHabitWizardScreen() {
   );
 
   function nextStep() {
-    if (step === 1 && !canContinueStep1) return;
+    if (step === 1 && !canCreateHabit) return;
 
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setStep((prev) => prev + 1);
@@ -147,10 +152,10 @@ export default function CreateHabitWizardScreen() {
 
           <Pressable
             onPress={nextStep}
-            disabled={!canContinueStep1}
+            disabled={!canCreateHabit}
             style={[
               styles.primaryButton,
-              !canContinueStep1 && styles.buttonDisabled,
+              !canCreateHabit && styles.buttonDisabled,
             ]}
           >
             <Text style={styles.primaryText}>Continuar</Text>
@@ -187,6 +192,7 @@ export default function CreateHabitWizardScreen() {
             onModeChange={setFrequencyMode}
             value={frequency}
             onChange={setFrequency}
+            isSaving={isSaving}
           />
 
           {/* RESUMEN */}
@@ -195,7 +201,7 @@ export default function CreateHabitWizardScreen() {
 
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Hábito</Text>
-              <Text style={styles.summaryValue}>{title || description}</Text>
+              <Text style={styles.summaryValue}>{title}</Text>
             </View>
 
             <View style={styles.summaryRow}>
@@ -216,6 +222,7 @@ export default function CreateHabitWizardScreen() {
             onNext={handleSave}
             nextLabel={isSaving ? 'Guardando...' : 'Crear hábito'}
             isSaving={isSaving}
+            disabledNext={!canCreateHabit}
           />
         </View>
       )}
@@ -241,6 +248,7 @@ function WizardNavigation({
   onNext,
   nextLabel = 'Continuar',
   isSaving = false,
+  disabledNext = false,
 }) {
   return (
     <View style={styles.navContainer}>
@@ -254,8 +262,11 @@ function WizardNavigation({
 
       <Pressable
         onPress={onNext}
-        style={[styles.primaryButtonSmall, isSaving && styles.buttonDisabled]}
-        disabled={isSaving}
+        style={[
+          styles.primaryButtonSmall,
+          (isSaving || disabledNext) && styles.buttonDisabled,
+        ]}
+        disabled={isSaving || disabledNext}
       >
         <Text style={styles.primaryText}>{nextLabel}</Text>
       </Pressable>
