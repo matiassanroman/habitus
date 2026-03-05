@@ -1,13 +1,4 @@
-import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  Pressable,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-} from 'react-native';
+import { View, Text, TextInput, StyleSheet, Pressable } from 'react-native';
 import { useState, useEffect } from 'react';
 import { useLocalSearchParams, router } from 'expo-router';
 import Toast from 'react-native-toast-message';
@@ -141,148 +132,138 @@ export default function EditHabitScreen() {
 
   return (
     <Screen>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={{ flex: 1 }}
-      >
-        <ScrollView
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
+      {/* INFORMACIÓN */}
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Información</Text>
+
+        <TextInput
+          placeholder="Ej: Leer 10 páginas por día"
+          placeholderTextColor="#94a3b8"
+          value={title}
+          onChangeText={(text) => setTitle(text.slice(0, TITLE_MAX))}
+          maxLength={TITLE_MAX}
+          style={styles.input}
+          autoFocus
+          returnKeyType="done"
+          editable={!isSavingOrDeleting}
+        />
+
+        <Text style={[styles.counter, titleNearLimit && styles.counterWarning]}>
+          {title.length}/{TITLE_MAX}
+        </Text>
+
+        <TextInput
+          placeholder="Descripción corta (opcional)"
+          placeholderTextColor="#94a3b8"
+          value={description}
+          onChangeText={(text) =>
+            setDescription(text.slice(0, DESCRIPTION_MAX))
+          }
+          maxLength={DESCRIPTION_MAX}
+          style={[styles.input, styles.textArea]}
+          multiline
+          editable={!isSavingOrDeleting}
+        />
+
+        <Text
+          style={[
+            styles.counter,
+            descriptionNearLimit && styles.counterWarning,
+          ]}
         >
-          {/* INFORMACIÓN */}
-          <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Información</Text>
+          {description.length}/{DESCRIPTION_MAX}
+        </Text>
+      </View>
 
-            <TextInput
-              placeholder="Ej: Leer 10 páginas por día"
-              value={title}
-              onChangeText={(text) => setTitle(text.slice(0, TITLE_MAX))}
-              maxLength={TITLE_MAX}
-              style={styles.input}
-              autoFocus
-              returnKeyType="done"
-              editable={!isSavingOrDeleting}
-            />
+      {/* CATEGORÍA */}
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Categoría</Text>
+        <CategoryGridPicker
+          value={category}
+          onChange={setCategory}
+          isSaving={isSavingOrDeleting}
+        />
+      </View>
 
-            <Text
-              style={[styles.counter, titleNearLimit && styles.counterWarning]}
-            >
-              {title.length}/{TITLE_MAX}
-            </Text>
+      {/* FRECUENCIA */}
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Frecuencia</Text>
+        <FrequencyPicker
+          mode={frequencyMode}
+          onModeChange={setFrequencyMode}
+          value={frequency}
+          onChange={setFrequency}
+          isSaving={isSavingOrDeleting}
+        />
+      </View>
 
-            <TextInput
-              placeholder="Descripción corta (opcional)"
-              value={description}
-              onChangeText={(text) =>
-                setDescription(text.slice(0, DESCRIPTION_MAX))
-              }
-              maxLength={DESCRIPTION_MAX}
-              style={[styles.input, styles.textArea]}
-              multiline
-              editable={!isSavingOrDeleting}
-            />
+      {/* BOTONES */}
+      <View style={styles.actionsRow}>
+        <Pressable
+          onPress={handleSave}
+          disabled={!canSubmit}
+          style={[
+            styles.actionButton,
+            styles.editButton,
+            !canSubmit && styles.buttonDisabled,
+          ]}
+        >
+          <Text style={styles.editText}>
+            {isSavingOrDeleting
+              ? 'Guardando...'
+              : !hasChanges
+                ? 'Sin cambios'
+                : 'Guardar cambios'}
+          </Text>
+        </Pressable>
 
-            <Text
-              style={[
-                styles.counter,
-                descriptionNearLimit && styles.counterWarning,
-              ]}
-            >
-              {description.length}/{DESCRIPTION_MAX}
-            </Text>
-          </View>
+        <Pressable
+          style={[
+            styles.actionButton,
+            styles.deleteButton,
+            isSavingOrDeleting && styles.buttonDisabled,
+          ]}
+          onPress={() => setConfirmDelete(true)}
+          disabled={isSavingOrDeleting}
+        >
+          <Text style={styles.deleteText}>
+            {isSavingOrDeleting ? 'Eliminando...' : 'Eliminar hábito'}
+          </Text>
+        </Pressable>
+      </View>
 
-          {/* CATEGORÍA */}
-          <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Categoría</Text>
-            <CategoryGridPicker
-              value={category}
-              onChange={setCategory}
-              isSaving={isSavingOrDeleting}
-            />
-          </View>
+      <ConfirmDeleteModal
+        visible={confirmDelete}
+        title="Eliminar Hábito"
+        message={`¿Seguro que quieres eliminar "${title}"?`}
+        onCancel={() => setConfirmDelete(false)}
+        onConfirm={async () => {
+          if (isSavingOrDeleting) return;
+          setIsSavingOrDeletingOrDeleting(true);
 
-          {/* FRECUENCIA */}
-          <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Frecuencia</Text>
-            <FrequencyPicker
-              mode={frequencyMode}
-              onModeChange={setFrequencyMode}
-              value={frequency}
-              onChange={setFrequency}
-              isSaving={isSavingOrDeleting}
-            />
-          </View>
+          try {
+            await deleteHabit(habitId);
 
-          {/* BOTONES */}
-          <View style={styles.actionsRow}>
-            <Pressable
-              onPress={handleSave}
-              disabled={!canSubmit}
-              style={[
-                styles.actionButton,
-                styles.editButton,
-                !canSubmit && styles.buttonDisabled,
-              ]}
-            >
-              <Text style={styles.editText}>
-                {isSavingOrDeleting
-                  ? 'Guardando...'
-                  : !hasChanges
-                    ? 'Sin cambios'
-                    : 'Guardar cambios'}
-              </Text>
-            </Pressable>
+            Toast.show({
+              type: 'info',
+              text1: 'Hábito eliminado',
+              position: 'bottom',
+              visibilityTime: 3000,
+            });
 
-            <Pressable
-              style={[
-                styles.actionButton,
-                styles.deleteButton,
-                isSavingOrDeleting && styles.buttonDisabled,
-              ]}
-              onPress={() => setConfirmDelete(true)}
-              disabled={isSavingOrDeleting}
-            >
-              <Text style={styles.deleteText}>
-                {isSavingOrDeleting ? 'Eliminando...' : 'Eliminar hábito'}
-              </Text>
-            </Pressable>
-          </View>
-
-          <ConfirmDeleteModal
-            visible={confirmDelete}
-            title="Eliminar Hábito"
-            message={`¿Seguro que quieres eliminar "${title}"?`}
-            onCancel={() => setConfirmDelete(false)}
-            onConfirm={async () => {
-              if (isSavingOrDeleting) return;
-              setIsSavingOrDeletingOrDeleting(true);
-
-              try {
-                await deleteHabit(habitId);
-
-                Toast.show({
-                  type: 'info',
-                  text1: 'Hábito eliminado',
-                  position: 'bottom',
-                  visibilityTime: 3000,
-                });
-
-                setIsSavingOrDeletingOrDeleting(false);
-                router.back();
-              } catch (e) {
-                setIsSavingOrDeletingOrDeleting(false);
-                Toast.show({
-                  type: 'error',
-                  text1: 'Error',
-                  text2: 'No se pudo eliminar el hábito',
-                  position: 'bottom',
-                });
-              }
-            }}
-          />
-        </ScrollView>
-      </KeyboardAvoidingView>
+            setIsSavingOrDeletingOrDeleting(false);
+            router.back();
+          } catch (e) {
+            setIsSavingOrDeletingOrDeleting(false);
+            Toast.show({
+              type: 'error',
+              text1: 'Error',
+              text2: 'No se pudo eliminar el hábito',
+              position: 'bottom',
+            });
+          }
+        }}
+      />
     </Screen>
   );
 }

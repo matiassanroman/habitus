@@ -125,6 +125,7 @@ export default function CreateHabitWizardScreen() {
 
           <TextInput
             placeholder="Ej: Leer 10 páginas por día"
+            placeholderTextColor="#94a3b8"
             value={title}
             onChangeText={(text) => setTitle(text.slice(0, TITLE_MAX))}
             maxLength={TITLE_MAX}
@@ -137,6 +138,7 @@ export default function CreateHabitWizardScreen() {
 
           <TextInput
             placeholder="Descripción corta (opcional)"
+            placeholderTextColor="#94a3b8"
             value={description}
             onChangeText={(text) =>
               setDescription(text.slice(0, DESCRIPTION_MAX))

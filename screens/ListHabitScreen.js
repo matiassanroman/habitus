@@ -26,25 +26,24 @@ export default function ListHabitScreen() {
   return (
     <Screen>
       <View>
-        <View>
-          {habitsForCategory.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyTitle}>No tienes hábitos creados.</Text>
-              <Text style={styles.emptyText}>
-                Puedes descansar o crear uno nuevo desde la pestaña Crear
-                Hábito.
-              </Text>
-            </View>
-          ) : (
-            habitsForCategory.map((habit) => (
+        {habitsForCategory.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyTitle}>No tienes hábitos creados.</Text>
+            <Text style={styles.emptyText}>
+              Puedes descansar o crear uno nuevo desde la pestaña Crear Hábito.
+            </Text>
+          </View>
+        ) : (
+          <View style={{ gap: 18 }}>
+            {habitsForCategory.map((habit) => (
               <HabitCard
                 key={habit.id}
                 habit={habit}
                 onDelete={(id) => handleDeleteHabit(id)}
               />
-            ))
-          )}
-        </View>
+            ))}
+          </View>
+        )}
       </View>
     </Screen>
   );

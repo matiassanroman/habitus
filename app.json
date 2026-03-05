@@ -22,15 +22,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.matias.sanroman.habitus",
-      "statusBar": {
-        "backgroundColor": "#ffffff",
-        "barStyle": "dark-content",
-        "translucent": true
-      },
-      "navigationBar": {
-        "backgroundColor": "#ffffff"
-      }
+      "package": "com.matias.sanroman.habitus"
     },
     "plugins": ["expo-router"],
     "extra": {
